@@ -7,10 +7,17 @@ services:
     volumes:
       #- "cv-root:/mnt/data:ro"
       -  ${CVDATA}:/mnt/data:ro
+    ports:
+      - 1337:1337
   nglancer:
     build:
       context: ./neuroglancer
       dockerfile: neuroglancer.dockerfile
+    depends_on:
+      - cv
+    ports:
+      - 8080:8080
+
 
 #volumes:
 #  cv-root:

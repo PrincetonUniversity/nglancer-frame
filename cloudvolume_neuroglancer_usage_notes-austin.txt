@@ -1,0 +1,20 @@
+# enter the conda environment (see install notes)
+conda activate ng 
+# enter ipython
+ipython
+from cloudvolume import Cloudvolume
+vol = Cloudvolume('/jukebox/LightSheetData/atlas/neuroglancer/atlas/allenatlas_2017/')
+vol.viewer(port=1337) # hosts the cloudvolume data at http port 1337 
+# in another python session (I usually use jupyter notebook)
+import neuroglancer
+# set the viewer client
+neuroglancer.set_static_content_source(url='https://neuromancer-seung-import.appspot.com') 
+viewer = neuroglancer.Viewer()
+# This volume handle can be used to notify the viewer that the data has changed.
+
+# load in data
+with viewer.txn() as s:
+    s.layers['segmentation'] = neuroglancer.SegmentationLayer(source='precomputed://http://localhost:1337'
+    )
+# generates the link for the user
+print(viewer) 

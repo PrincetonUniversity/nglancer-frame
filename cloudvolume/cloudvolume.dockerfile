@@ -1,6 +1,19 @@
-FROM python:3.6.9-alpine
+#FROM continuumio/anaconda3:2019.07
+FROM python:3.6.9-slim-buster
 
-RUN pip install cloud-volume cloud-volume[boss,test,all_viewers]
+#USER root
+
+#SHELL ["/bin/bash","-c"]
+
+RUN mkdir -p /opt/repos && mkdir -p /tmp/cloudvolume/test-skeletons
+
+WORKDIR /opt/repos
+
+RUN apt-get update && apt-get upgrade && \
+    apt-get install bash git gcc musl-dev curl htop psmisc -y
+
+RUN git clone https://github.com/seung-lab/cloud-volume.git && cd cloud-volume && \
+    pip install -r requirements.txt && pip install . && pip install -e .[all_viewers] 
 
 VOLUME ["/mnt/data"]
 
