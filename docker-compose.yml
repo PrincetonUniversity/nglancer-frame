@@ -5,7 +5,6 @@ services:
       context: ./cloudvolume
       dockerfile: cloudvolume.dockerfile
     volumes:
-      #- "cv-root:/mnt/data:ro"
       -  ${CVDATA}:/mnt/data:ro
     ports:
       - 1337:1337
@@ -17,9 +16,3 @@ services:
       - cv
     ports:
       - 8080:8080
-
-
-#volumes:
-#  cv-root:
-#    name: ${CVDATA}
-#    external: false
