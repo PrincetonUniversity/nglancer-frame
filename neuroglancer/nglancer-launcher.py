@@ -21,10 +21,11 @@ logging.info('setting viewers default volume')
 #load data from cloudvolume container:
 with viewer.txn() as s:
     s.layers['segmentation'] = neuroglancer.SegmentationLayer(
-        source='precomputed://http://localhost:1337/skeletons')
+        source='precomputed://http://localhost:1337')
 # this container does not act as a proxy for the CV container, as such
 # we need to expose port 1337 to the local system in the docker compose file.
 
+## need to retool this so it shows the correct link, the internal FQDN is not useful
 logging.info("viewer at: {}".format(viewer))
 
 print("neuroglancer viewer now available")

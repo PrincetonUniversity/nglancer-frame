@@ -15,19 +15,25 @@ def start_server():
     ## add some error checking
     if not os.path.isfile('/mnt/data/info'):
         logging.info('no valid volume found, using test data')
-        vol=testdat()
+        #vol=testdat()
+        arr = np.random.random_integers(0, high=255, size=(128,128, 128))
+        arr = np.asarray(arr, dtype=np.uint8)
+        vol = CloudVolume.from_numpy(arr, max_mip=1)
+
     else:
         logging.info('using mounted dataset')
         vol = CloudVolume('file:///mnt/data')
 
-    #logging.info('patching viewer to allow connections on all IPs')
-    #funcType = types.MethodType
-    #vol.viewer = funcType(localviewer, vol)
+    logging.info('volume created: {}'.format(vol[1,1,1]))
+
+    logging.info('patching viewer to allow connections on all IPs')
+    funcType = types.MethodType
+    vol.viewer = funcType(localviewer, vol)
 
     logging.info('starting cloudvolume service')
     vol.viewer()
-    while (1):
-        sleep(0.1)
+    #while (1):
+    #    sleep(0.1)
 
 
 
@@ -35,6 +41,7 @@ def start_server():
 def localviewer(self, port=1337):
     import cloudvolume.server
     logging.info('using replacement viewer function')
+    logging.info('cloudpath: {}'.format(self.cloudpath))
     cloudvolume.server.view(self.cloudpath,hostname="0.0.0.0", port=port)
 
 def testdat():
