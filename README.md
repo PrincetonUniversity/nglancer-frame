@@ -1,8 +1,12 @@
 # Neuroglancer Frame
-This is a small `docker` + `docker-compose` based solution for running the neuroglancer volumetric viewer against precomputed file sets off local filesystems. Local will also allow usage of mounted cifs and nfs filesystems.
+This is a small `docker` + `docker-compose` based solution for running the [neuroglancer volumetric viewer](https://github.com/seung-lab/neuroglancer) against precomputed file sets off local filesystems. Local here is relative and will also allow usage of mounted cifs and nfs filesystems. The data is served up using the [cloud-volume tool](https://github.com/seung-lab/cloud-volume) developed by the seung lab.
+
+## Requirements
+* Docker: A modern version of [docker appropriate to the OS](https://docs.docker.com/install/#supported-platforms) needs to be installed.
+* docker-compose: A recent version of [docker-compose](https://docs.docker.com/compose/install/#install-compose) must be installed as the compose file included with this package uses a relatively new format version to allow for the `.env` file support to work.
 
 ## Usage
-First the images will need to be built with: `docker-compose build`; initially this will take a bit of time but should not need to be done again unless pulling new updates from this repo. After that simply set the variable `CVDATA` to the root of a dataset and launch the containers with `docker-compose up`. This will start a server running on port `8080` on your local machine that will present the selected dataset inside neuroglancer.
+First the images will need to be built with: `docker-compose build`; initially this will take a bit of time but should not need to be done again unless pulling new updates from this repo. After that simply set the variable `CVDATA` to the root of a dataset, this must be a full path to the folder, and launch the containers with `docker-compose up`. This will start a server running on port `8080` on your local machine that will present the selected dataset inside neuroglancer.
 
 On a linux desktop this would look like:
 ```
