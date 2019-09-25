@@ -1,10 +1,10 @@
 FROM python:3.6.9-slim-buster
 
-RUN mkdir -p /opt/repos
+RUN mkdir -p /opt/repos && mkdir -p /mnt/exchange
 
 WORKDIR /opt/repos
 
-RUN apt-get update && apt-get upgrade && \
+RUN apt-get update -y && apt-get upgrade -y && \
     apt-get install bash git gcc 'g++' musl-dev -y
 
 ##setup required python software

@@ -12,7 +12,14 @@ services:
     build:
       context: ./neuroglancer
       dockerfile: neuroglancer.dockerfile
+    volumes:
+      - ./exchange:/mnt/exchange
     depends_on:
       - cv
     ports:
       - 8080:8080
+
+## notes on approach for multi volume.
+#localhost:8080/nglancer
+#localhost:8080/vol/X <- CloudVolume
+#localhost:8080/notebook

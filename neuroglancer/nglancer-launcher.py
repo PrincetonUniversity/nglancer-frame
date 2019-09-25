@@ -4,6 +4,8 @@
 import neuroglancer
 import logging
 from time import sleep
+
+
 logging.basicConfig(level=logging.INFO)
 # we are currently using the seunglab hosted neuroglancer static resources
 # ideally this would be self hosted for local development against nglancer
@@ -16,6 +18,8 @@ neuroglancer.set_server_bind_address('0.0.0.0','8080')
 logging.info('starting viewer subprocess')
 #setup a viewer with pre-configured defaults and launch.
 viewer = neuroglancer.Viewer()
+
+logging.info('viewer token: {}'.format(viewer.token))
 
 logging.info('setting viewers default volume')
 #load data from cloudvolume container:
