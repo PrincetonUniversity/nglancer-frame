@@ -1,6 +1,16 @@
 version: '3.4'
 services:
-  cv:
+  heimdall:
+    env_file: .env
+    image: linuxserver/heimdall
+    container_name: heimdall
+    environment:
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - ./heimdall/config:/config
+  testcv:
+    env_file: .env
     build:
       context: ./cloudvolume
       dockerfile: cloudvolume.dockerfile
@@ -8,18 +18,57 @@ services:
       -  ${CVDATA}:/mnt/data:ro
     ports:
       - 1337:1337
+    depends_on:
+      - confproxy
   nglancer:
+    env_file: .env
     build:
       context: ./neuroglancer
       dockerfile: neuroglancer.dockerfile
-    volumes:
-      - ./exchange:/mnt/exchange
     depends_on:
-      - cv
+      - testcv
+      - confproxy
     ports:
-      - 8080:8080
+      - "8080:8080"
+    volumes:
+      - ./libraries:/opt/libraries
+  confproxy:
+    env_file: .env
+    image: jupyterhub/configurable-http-proxy:3.1.1
+    # expose the proxy to the world
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+    command: ['configurable-http-proxy', '--no-prepend-path',
+            '--error-target', 'http://apacheproxy/', '--api-ip',
+            '0.0.0.0',]
+
+  apacheproxy:
+    env_file: .env
+    build:
+      context: ./apache
+      dockerfile: apacheproxy.dockerfile
+    volumes:
+      - ./apache/sites:/usr/local/apache2/conf/sites/
+    ports:
+      - "80:80"
+  notebook:
+    env_file: .env
+    image: jupyter/datascience-notebook:latest
+    command: ["jupyter", "notebook",
+     "--no-browser","--NotebookApp.token=''",
+     "--NotebookApp.password=''",
+     "--NotebookApp.base_url='/notebook'",
+     "--NotebookApp.allow_origin='*'"
+     ]
+    volumes:
+      - ./data:/home/jovyan
+      - ./libraries:/opt/libraries
 
 ## notes on approach for multi volume.
 #localhost:8080/nglancer
 #localhost:8080/vol/X <- CloudVolume
 #localhost:8080/notebook
+
+## to access local host port objects from inside the proxy use the
+# hostname: `host.docker.internal`

@@ -4,9 +4,9 @@
 import neuroglancer
 import logging
 from time import sleep
+import progproxy as pp
 
-
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 # we are currently using the seunglab hosted neuroglancer static resources
 # ideally this would be self hosted for local development against nglancer
 logging.info('configuring neuroglancer defaults')
@@ -25,14 +25,24 @@ logging.info('setting viewers default volume')
 #load data from cloudvolume container:
 with viewer.txn() as s:
     s.layers['segmentation'] = neuroglancer.SegmentationLayer(
-        source='precomputed://http://localhost:1337')
+        source='precomputed://http://localhost/testcv/')
 # this container does not act as a proxy for the CV container, as such
 # we need to expose port 1337 to the local system in the docker compose file.
 
 ## need to retool this so it shows the correct link, the internal FQDN is not useful
 logging.info("viewer at: {}".format(viewer))
 
-print("neuroglancer viewer now available")
+logging.debug('creating proxy object')
+proxy_h = pp.progproxy(target_hname='confproxy')
+logging.debug('adding route to configurable proxy')
+proxy_h.addroute(proxypath='viewer0',proxytarget=f'http://nglancer:8080/v/{viewer.token}/')
+#proxy_h.addroute(proxypath='viewer0/',proxytarget=f'{viewer}')
+## check routes
+#print(proxy_h.getroutes())
+
+#proxy_h.addroute(proxypath='viewer0',proxytarget=f'{viewer}')
+
+logging.debug("neuroglancer viewer is now available")
 
 while(1):
     sleep(0.1)
