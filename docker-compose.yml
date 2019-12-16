@@ -1,21 +1,21 @@
 version: '3.4'
 services:
-  heimdall:
-    env_file: .env
-    image: linuxserver/heimdall
-    container_name: heimdall
-    environment:
-      - PUID=1000
-      - PGID=1000
-    volumes:
-      - ./heimdall/config:/config
+  # heimdall:
+  #   env_file: .env
+  #   image: linuxserver/heimdall
+  #   container_name: heimdall
+  #   environment:
+  #     - PUID=1000
+  #     - PGID=1000
+  #   volumes:
+  #     - ./heimdall/config:/config
   testcv:
     env_file: .env
     build:
       context: ./cloudvolume
       dockerfile: cloudvolume.dockerfile
     volumes:
-      -  ${CVDATA}:/mnt/data:ro
+      - ${CVDATA}:/mnt/data:ro
     ports:
       - 1337:1337
     depends_on:
@@ -39,9 +39,16 @@ services:
     ports:
       - "8000:8000"
       - "8001:8001"
-    command: ['configurable-http-proxy', '--no-prepend-path',
-            '--error-target', 'http://apacheproxy/', '--api-ip',
-            '0.0.0.0',]
+    command: ['configurable-http-proxy',
+              '--auto-rewrite',
+              # '--host-routing',
+              # '--no-x-forward',
+              '--no-include-prefix',
+              '--no-prepend-path',
+              # '--change-origin', 'http://localhost/',
+              '--log-level', 'debug',
+              # '--default-target','http://notebook:8888/notebook/',
+              '--api-ip', '0.0.0.0']
 
   apacheproxy:
     env_file: .env
@@ -52,18 +59,18 @@ services:
       - ./apache/sites:/usr/local/apache2/conf/sites/
     ports:
       - "80:80"
-  notebook:
-    env_file: .env
-    image: jupyter/datascience-notebook:latest
-    command: ["jupyter", "notebook",
-     "--no-browser","--NotebookApp.token=''",
-     "--NotebookApp.password=''",
-     "--NotebookApp.base_url='/notebook'",
-     "--NotebookApp.allow_origin='*'"
-     ]
-    volumes:
-      - ./data:/home/jovyan
-      - ./libraries:/opt/libraries
+  # notebook:
+  #   env_file: .env
+  #   image: jupyter/datascience-notebook:latest
+  #   command: ["jupyter", "notebook",
+  #    "--no-browser","--NotebookApp.token=''",
+  #    "--NotebookApp.password=''",
+  #    "--NotebookApp.base_url='/notebook'",
+  #    "--NotebookApp.allow_origin='*'"
+  #    ]
+  #   volumes:
+  #     - ./data:/home/jovyan
+  #     - ./libraries:/opt/libraries
 
 ## notes on approach for multi volume.
 #localhost:8080/nglancer
