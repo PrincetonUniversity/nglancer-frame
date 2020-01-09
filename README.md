@@ -6,33 +6,47 @@ This is a small `docker` + `docker-compose` based solution for running the [neur
 * docker-compose: A recent version of [docker-compose](https://docs.docker.com/compose/install/#install-compose) must be installed as the compose file included with this package uses a relatively new format version to allow for the `.env` file support to work.
 
 ## Usage
-First the images will need to be built with: `docker-compose build`; initially this will take a bit of time but should not need to be done again unless pulling new updates from this repo. After that simply set the variable `CVDATA` to the root of a dataset, this must be a full path to the folder, and launch the containers with `docker-compose up`. This will start a server running on port `8080` on your local machine that will present the selected dataset inside neuroglancer.
+First the images will need to be built with: `docker-compose build`; initially this will take a bit of time but should not need to be done again unless pulling new updates from this repo. After that simply set the variable `CVDATA` to the root of a dataset, this must be a full path to the folder, and launch the containers with `docker-compose up`. A series of containers will be launched to handle a variety of different subtasks including an extremely basic website.
 
 On a linux desktop this would look like:
 ```
 docker-compose build
-export CVDATA=/mnt/dataset # change path to correct location
+export CVDATA=/mnt/dataset # change path to correct location for mounted volume
 docker-compose up
 ```
+Once this is done open a browser and navigate to `http://localhost` and you'll find a website with links to both an iPython notebook and the neuroglancer web interface.
 
-This will result in output similar to:
+## Structure
+A single docker-compose file is able to build and launch all the constituent parts, bringing up a number of subordinate tasks and an apache server acting as a reverse proxy to act as a front end.
+### apacheproxy
+This creates a simple vhost that populates several sub tree urls to different backend services.
 ```
-nglancer_1  | INFO:root:configuring neuroglancer defaults
-nglancer_1  | INFO:root:starting viewer subprocess
-nglancer_1  | INFO:root:setting viewers default volume
-nglancer_1  | INFO:root:viewer at: http://2d1e96afebd8:8080/v/3fd6db165c87e94c073947c6abacbf4cc13bf12d/
-cv_1        | INFO:root:using mounted dataset
-cv_1        | DEBUG:python_jsonschema_objects.classbuilder:Setting value for 'description' to Segmentation volume for the 3D labeled allen atlas
+/ <- this points to the flask-root application
+/testcv <- this points to the default cloudvolume launched as a service.
+/vols <- this points to the runtime configurable proxy used to setup additional volumes, neuroglancer instances, or other services
+/nglancer <- this points to the base location of the stock neuroglancer instance, while it can't be used directly due to neuroglancer design decisions it's useful for URL construction.
+/notebook <- this points to an iPython notebook server mounting the ./data folder in this project
 ```
+### confproxy
+This launches the http-conf-proxy developed by the jupyterhub team (details found here: https://github.com/jupyterhub/configurable-http-proxy) to use for routing requests to different backend cloudvolumes.
 
-The 'viewer at' value above unfortunately isn't 100% accurate at this time. If you copy the URL from the `:` past to the end this will work as a valid url for localhost as follows: `http://localhost:8080/v/3fd6db165c87e94c073947c6abacbf4cc13bf12d/`.  This changes with each execution of the container so you'll have to recopy this each time you launch the viewer.
+### testcv
+This launches a shim that mounts a the volume located at the envvar `CVDATA`, inspects it, and serves it out as using the seunglab's 'cloud volume' tool (https://github.com/seung-lab/cloud-volume). If an invalid volume is found at the mounted location it generates a random cube of data for testing against instead.
 
+### nglancer
+This launches a small python shim to spin up the neuroglancer service and spin lock to keep it alive while the services are running.  The default neuroglancer instance will be configured out of the box to view the cloudvolume launched by the `testcv` service.  It also registers relevant meta-data into the redis database for use by other services to allow them to construct urls to the working instance.
 
+TODO: eliminate the spinlock and have it startup a properly forked service.
 
-## Todo
-* Currently the URL generation is incorrect because of how neuroglancer's python tooling detects the hostname / fqdn inside a container. Correcting this output is currently in progress.
-* Jupyter notebook sidecar that can control the neuroglancer instance over a websocket connection.
- * Fundamentally this seems like it *should* work but the 160 byte control code has to be overcome.
+### notebook
+This launches a standard datascience notebook server mounting the `./data` folder in this project to allow for a local python scratchpad system. The redis toolkit is installed here to allow direct access to the key value store.
+
+### redis
+This simply spins up an all in memory redis database to use as a key-value exchange server between several of the other services above.
+
+### flask-root
+This is a simple one file flask app that apache send you to by default if you go to the localhost root. It generates a valid link for the neuroglancer instance and provides a direct link to the notebook server to help people get started.
 
 ## Stretch Work
-* wrap all sub containers in apache, nginx, or similar reverse proxy system to allow for a single url set for neuroglancer, the notebook, and hide the back end services so the end user doesn't need to know anything about ports / port mapping / etc.
+* Jupyter notebook sidecar that can control the neuroglancer instance over a websocket connection.
+ * Fundamentally this seems like it *should* work but the 160 byte control code has to be overcome.

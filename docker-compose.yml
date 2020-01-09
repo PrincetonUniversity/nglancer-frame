@@ -50,6 +50,16 @@ services:
       - ./apache/sites:/usr/local/apache2/conf/sites/
     ports:
       - "80:80"
+  flask-root:
+    env_file: .env
+    build:
+      context: ./flask-root
+      dockerfile: flask-root.Dockerfile
+    volumes:
+      - ./flask-root/app:/opt/app
+    ports:
+      - '5000:5000'
+
 
 # adding an all in memory redis server; this will and is meant to lose state
 # between relaunches of the service. Self registering services should get
