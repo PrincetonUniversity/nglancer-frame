@@ -14,7 +14,7 @@ RUN apt-get update && apt-get upgrade -y && \
 
 #RUN git clone https://github.com/seung-lab/cloud-volume.git && cd cloud-volume && \
 #    pip install -r requirements.txt && pip install . && pip install -e .[all_viewers]
-RUN pip install cloud-volume && pip install cloud-volume[boss,test,all_viewers]
+RUN pip install redis cloud-volume && pip install cloud-volume[boss,test,all_viewers]
 
 VOLUME ["/mnt/data"]
 
