@@ -8,9 +8,11 @@ RUN apt-get update -y && apt-get upgrade -y && \
     apt-get install bash git gcc 'g++' musl-dev -y
 
 ##setup required python software
-RUN  pip install neuroglancer redis && \
-     git clone https://github.com/seung-lab/igneous.git /opt/repos/igneous && \
-     cd /opt/repos/igneous && pip install -r requirements.txt
+# RUN  pip install neuroglancer redis && \
+#      git clone https://github.com/seung-lab/igneous.git /opt/repos/igneous && \
+#      cd /opt/repos/igneous && pip install -r requirements.txt
+
+RUN  pip install neuroglancer==1.1.6 redis
 
 COPY nglancer-launcher.py /opt/nglancer-launcher.py
 
