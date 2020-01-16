@@ -79,3 +79,9 @@ services:
       - ./data:/home/jovyan
       - ./libraries:/opt/libraries
       - /var/run/docker.sock:/var/run/docker.sock
+
+
+networks:
+  default:
+    external:
+      name: nglancer
