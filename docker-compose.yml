@@ -33,13 +33,9 @@ services:
       - "8001:8001"
     command: ['configurable-http-proxy',
               '--auto-rewrite',
-              # '--host-routing',
-              # '--no-x-forward',
               '--no-include-prefix',
               '--no-prepend-path',
-              # '--change-origin', 'http://localhost/',
               '--log-level', 'debug',
-              # '--default-target','http://notebook:8888/notebook/',
               '--api-ip', '0.0.0.0']
   apacheproxy:
     env_file: .env
@@ -61,10 +57,10 @@ services:
       - '5000:5000'
 
 
-# adding an all in memory redis server; this will and is meant to lose state
-# between relaunches of the service. Self registering services should get
-# code that verifies periodically that they are correctly registered to the
-# key value store.
+  # adding an all in memory redis server; this will and is meant to lose state
+  # between relaunches of the service. Self registering services should get
+  # code that verifies periodically that they are correctly registered to the
+  # key value store.
   redis:
     image: redis
     expose:
@@ -74,19 +70,12 @@ services:
     build:
       context: notebook
       dockerfile: scratchpad.Dockerfile
-    command: ["jupyter", "notebook",
-             "--no-browser", "--NotebookApp.token=''",
-             "--NotebookApp.password=''",
-             "--NotebookApp.base_url='/notebook'",
-             "--NotebookApp.allow_origin='*'"]
+    command: ["start-notebook.sh",
+            "--no-browser", "--NotebookApp.token=''",
+            "--NotebookApp.password=''",
+            "--NotebookApp.base_url='/notebook'",
+            "--NotebookApp.allow_origin='*'"]
     volumes:
       - ./data:/home/jovyan
       - ./libraries:/opt/libraries
-
-## notes on approach for multi volume.
-# localhost:8080/nglancer <- doesn't work due to the token handling on nglancer
-# localhost:8080/vol/X <- CloudVolume
-# localhost:8080/notebook
-
-## to access local host port objects from inside the proxy use the
-# hostname: `host.docker.internal`
+      - /var/run/docker.sock:/var/run/docker.sock
