@@ -6,12 +6,13 @@ This is a small `docker` + `docker-compose` based solution for running the [neur
 * docker-compose: A recent version of [docker-compose](https://docs.docker.com/compose/install/#install-compose) must be installed as the compose file included with this package uses a relatively new format version to allow for the `.env` file support to work.
 
 ## Usage
-First the images will need to be built with: `docker-compose build`; initially this will take a bit of time but should not need to be done again unless pulling new updates from this repo. After that simply set the variable `CVDATA` to the root of a dataset, this must be a full path to the folder, and launch the containers with `docker-compose up`. A series of containers will be launched to handle a variety of different subtasks including an extremely basic website.
+First the images will need to be built with: `./rebuild-all.sh`; initially this will take a bit of time but should not need to be done again unless pulling new updates from this repo. After that simply set the variable `CVDATA` to the root of a dataset, this must be a full path to the folder.  The last setup step required is to source the file `setids.sh` to set some required environment variables and launch the containers with `docker-compose up`. A series of containers will be launched to handle a variety of different subtasks including an extremely basic website.
 
 On a linux desktop this would look like:
 ```
-docker-compose build
+./rebuild-all.sh
 export CVDATA=/mnt/dataset # change path to correct location for mounted volume
+source ./setids.sh
 docker-compose up
 ```
 Once this is done open a browser and navigate to `http://localhost` and you'll find a website with links to both an iPython notebook and the neuroglancer web interface.
