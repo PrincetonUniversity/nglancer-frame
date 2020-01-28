@@ -1,25 +1,88 @@
 version: '3.4'
 services:
-  cv:
-    build:
-      context: ./cloudvolume
-      dockerfile: cloudvolume.dockerfile
-    volumes:
-      -  ${CVDATA}:/mnt/data:ro
+  # testcv:
+  #   env_file: .env
+  #   build:
+  #     context: ./cloudvolume
+  #     dockerfile: cloudvolume.dockerfile
+  #   volumes:
+  #     - ${CVDATA}:/mnt/data:ro
+  #   ports:
+  #     - 1337:1337
+  #   depends_on:
+  #     - confproxy
+  # nglancer:
+  #   env_file: .env
+  #   build:
+  #     context: ./neuroglancer
+  #     dockerfile: neuroglancer.dockerfile
+  #   depends_on:
+  #     - testcv
+  #     - confproxy
+  #     - redis
+  #   ports:
+  #     - "8080:8080"
+  #   volumes:
+  #     - ./libraries:/opt/libraries
+  confproxy:
+    env_file: .env
+    image: jupyterhub/configurable-http-proxy:3.1.1
+    # expose the proxy to the world
     ports:
-      - 1337:1337
-  nglancer:
+      - "8000:8000"
+      - "8001:8001"
+    command: ['configurable-http-proxy',
+              '--auto-rewrite',
+              '--no-include-prefix',
+              '--no-prepend-path',
+              '--log-level', 'debug',
+              '--api-ip', '0.0.0.0']
+  apacheproxy:
+    env_file: .env
     build:
-      context: ./neuroglancer
-      dockerfile: neuroglancer.dockerfile
+      context: ./apache
+      dockerfile: apacheproxy.dockerfile
     volumes:
-      - ./exchange:/mnt/exchange
-    depends_on:
-      - cv
+      - ./apache/sites:/usr/local/apache2/conf/sites/
     ports:
-      - 8080:8080
+      - "80:80"
+  flask-root:
+    env_file: .env
+    build:
+      context: ./flask-root
+      dockerfile: flask-root.Dockerfile
+    volumes:
+      - ./flask-root/app:/opt/app
+      - ./libraries:/opt/libraries
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - '5000:5000'
 
-## notes on approach for multi volume.
-#localhost:8080/nglancer
-#localhost:8080/vol/X <- CloudVolume
-#localhost:8080/notebook
+  # adding an all in memory redis server; this will and is meant to lose state
+  # between relaunches of the service. Self registering services should get
+  # code that verifies periodically that they are correctly registered to the
+  # key value store.
+  redis:
+    image: redis
+    expose:
+      - 6379
+  notebook:
+    env_file: .env
+    build:
+      context: notebook
+      dockerfile: scratchpad.Dockerfile
+    command: ["start-notebook.sh",
+            "--no-browser", "--NotebookApp.token=''",
+            "--NotebookApp.password=''",
+            "--NotebookApp.base_url='/notebook'",
+            "--NotebookApp.allow_origin='*'"]
+    volumes:
+      - ./data:/home/jovyan
+      - ./libraries:/opt/libraries
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /jukebox/LightSheetData:/mnt/LightSheetData
+
+networks:
+  default:
+    external:
+      name: nglancer
