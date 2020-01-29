@@ -5,3 +5,4 @@
 **/.jupyter
 **/.bash_history
 **/.local
+**/__pycache__
