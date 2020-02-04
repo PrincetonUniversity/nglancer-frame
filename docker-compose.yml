@@ -66,21 +66,21 @@ services:
     image: redis
     expose:
       - 6379
-  notebook:
-    env_file: .env
-    build:
-      context: notebook
-      dockerfile: scratchpad.Dockerfile
-    command: ["start-notebook.sh",
-            "--no-browser", "--NotebookApp.token=''",
-            "--NotebookApp.password=''",
-            "--NotebookApp.base_url='/notebook'",
-            "--NotebookApp.allow_origin='*'"]
-    volumes:
-      - ./data:/home/jovyan
-      - ./libraries:/opt/libraries
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /jukebox/LightSheetData:/mnt/LightSheetData
+  # notebook:
+  #   env_file: .env
+  #   build:
+  #     context: notebook
+  #     dockerfile: scratchpad.Dockerfile
+  #   command: ["start-notebook.sh",
+  #           "--no-browser", "--NotebookApp.token=''",
+  #           "--NotebookApp.password=''",
+  #           "--NotebookApp.base_url='/notebook'",
+  #           "--NotebookApp.allow_origin='*'"]
+  #   volumes:
+  #     - ./data:/home/jovyan
+  #     - ./libraries:/opt/libraries
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #     - /jukebox/LightSheetData:/mnt/LightSheetData
 
 networks:
   default:

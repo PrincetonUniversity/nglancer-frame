@@ -4,7 +4,6 @@ from flask import Flask
 import redis
 import docker
 import progproxy as pp
-import neuroglancer
 import logging
 import time
 import secrets
@@ -12,7 +11,7 @@ import os
 import json
 from datetime import datetime, timedelta
 
-
+hosturl = os.environ['HOSTURL']
 
 app = Flask(__name__)
 
@@ -24,7 +23,9 @@ def base():
     kv = redis.Redis(host="redis", decode_responses=True)
 
     # viewer0 = kv.hgetall("viewer0")
-    notebookurl = "http://localhost/notebook"
+    # notebookurl = "http://localhost/notebook"
+    hosturl = os.environ['HOSTURL']
+    notebookurl = f"http://localhost/notebook"
     # neuroglancerurl = f"http://localhost/nglancer/viewer0/v/{viewer0['token']}/"
 
     ## this just bruteforce dumps html into a return output instead of a polished
@@ -51,7 +52,6 @@ def ngdemo():
     logging.basicConfig(level=logging.DEBUG)
     client = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
-
     # Redis setup for this session
     kv = redis.Redis(host="redis", decode_responses=True)
 
@@ -69,10 +69,10 @@ def ngdemo():
     }
 
     # Set up first cloudvolume
-    cv1_container_name = 'testcv1_container'
+    cv1_container_name = '{}_cv1_container'.format(session_name)
     cv1_name = "testvol1"
     layer1_type = "image"
-    cv1_localhost_path = '/home/ahoag/ngdemo/demo_bucket/grin_lens/oostland_m27' 
+    cv1_localhost_path = '/jukebox/LightSheetData/lightserv_testing/neuroglancer/oostland_m27' 
     
     cv1_mounts = {
         cv1_localhost_path:{
@@ -98,10 +98,10 @@ def ngdemo():
     proxy_h.addroute(proxypath=proxypath_1,proxytarget=f"http://{cv1_container_name}:1337")
 
     # Set up the second cloudvolume
-    cv2_container_name = 'testcv2_container'
+    cv2_container_name = '{}_cv2_container'.format(session_name)
     cv2_name = "testvol2"
     layer2_type = "segmentation"
-    cv2_localhost_path = '/home/ahoag/ngdemo/demo_bucket/atlas/princetonmouse' 
+    cv2_localhost_path = '/jukebox/LightSheetData/lightserv_testing/neuroglancer/princetonmouse' 
     
     cv2_mounts = {
         cv2_localhost_path:{
@@ -127,8 +127,9 @@ def ngdemo():
     proxy_h.addroute(proxypath=proxypath_2,proxytarget=f"http://{cv2_container_name}:1337")
 
     # Run the ng container which adds the viewer info to redis
-    ng_container_name = 'testng_container'
+    ng_container_name = '{}_ng_container'.format(session_name)
     ng_environment = {
+        'HOSTURL':hosturl,
         'PYTHONPATH':'/opt/libraries',
         'CONFIGPROXY_AUTH_TOKEN':"'31507a9ddf3e41cf86b58ffede2db68326657437704461ae2c1a4018d55e18f0'",
         'SESSION_NAME':session_name
@@ -157,7 +158,7 @@ def ngdemo():
     logging.debug(f"Redis contents for viewer")
     logging.debug(viewer_dict)
     
-    neuroglancerurl = f"http://localhost/nglancer/{session_name}/v/{viewer_dict['token']}/" # localhost/nglancer is reverse proxied to 8080 inside the ng container
+    neuroglancerurl = f"http://{hosturl}/nglancer/{session_name}/v/{viewer_dict['token']}/" # localhost/nglancer is reverse proxied to 8080 inside the ng container
     return f"""
 <html>
     <head>
@@ -191,7 +192,7 @@ def ng_viewer_checker():
     session_names = [key.split('/')[-1] for key in proxy_viewer_dict.keys()]
     logging.debug("session names:")
     logging.debug(session_names)
-    """ Now delete the proxy routes """
+    """ Now delete the proxy routes for the viewers """
     for proxypath in proxy_viewer_dict.keys():
         proxy_h.deleteroute(proxypath)
     
@@ -213,7 +214,8 @@ def ng_viewer_checker():
         ng_container = client.containers.get(ng_container_name)
         logging.debug(f"Killing neuroglancer container: {ng_container_name}")
         ng_container.kill()           
-
+    final_timeout_timestamp_iso = (datetime.utcnow() - timedelta(seconds=5)).isoformat()
+    final_response = proxy_h.getroutes(inactive_since=final_timeout_timestamp_iso)
     return response.text
 
 if __name__ == "__main__":

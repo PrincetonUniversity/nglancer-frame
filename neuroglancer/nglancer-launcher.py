@@ -8,6 +8,8 @@ import redis
 import os
 import json
 
+hosturl = os.environ['HOSTURL']
+
 kv = redis.Redis(host="redis", decode_responses=True)  # container simply named redis
 
 logging.basicConfig(level=logging.DEBUG)
@@ -42,11 +44,11 @@ for ii in range(cv_count):
 	with viewer.txn() as s:
 		if layer_type == 'image':
 		    s.layers["image"] = neuroglancer.ImageLayer(
-		        source=f"precomputed://http://localhost:8000/cloudvols/{session_name}/{cv_name}" # this needs to be visible outside of the container in the browser
+		        source=f"precomputed://http://{hosturl}/cv/{session_name}/{cv_name}" # this needs to be visible outside of the container in the browser
 		    )
 		elif layer_type == 'segmentation':
 			s.layers["segmentation"] = neuroglancer.SegmentationLayer(
-		        source=f"precomputed://http://localhost:8000/cloudvols/{session_name}/{cv_name}" # this needs to be visible outside of the container in the browser
+		        source=f"precomputed://http://{hosturl}/cv/{session_name}/{cv_name}" # this needs to be visible outside of the container in the browser
 		    )
 
 ## need to retool this so it shows the correct link, the internal FQDN is not useful
