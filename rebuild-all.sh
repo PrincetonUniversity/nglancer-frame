@@ -3,9 +3,9 @@
 ## a simple script to remove crufty containers, assert a named docker network,
 # build all dockercomposeable containers, and retag the cloudvolume and neuroglancer latest containers
 
-
 #clear out junk and rebuild
 docker rm -f $(docker ps -aq)
+
 docker-compose build
 
 ## cleanup network to make sure a good fresh one exists
