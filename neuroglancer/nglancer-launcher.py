@@ -15,6 +15,7 @@ hosturl = os.environ['HOSTURL']
 
 kv = redis.Redis(host="redis", decode_responses=True)  # container simply named redis
 
+
 logging.basicConfig(level=logging.DEBUG)
 # we are currently using the seunglab hosted neuroglancer static resources
 # ideally this would be self hosted for local development against nglancer

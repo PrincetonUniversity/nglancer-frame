@@ -5,6 +5,7 @@
 
 #clear out junk and rebuild
 docker rm -f $(docker ps -aq)
+
 docker-compose build
 
 ## cleanup network to make sure a good fresh one exists

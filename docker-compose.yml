@@ -33,24 +33,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - '5000:5000'
-  # nglancerstatic:
-  #   env_file: .env
-  #   volumes:
-  #     - /home/ahoag/Git/neuroglancer:/opt/neuroglancer
-  #   build:
-  #     context: ./nglancerstatic
-  #     dockerfile: nglancerstatic.Dockerfile
-  #   ports:
-  #     - '8080:8080'
-  # adding an all in memory redis server; this will and is meant to lose state
-  # between relaunches of the service. Self registering services should get
-  # code that verifies periodically that they are correctly registered to the
-  # key value store.
-  redis:
-    image: redis
-    expose:
-      - 6379
- 
+
 networks:
   default:
     external:
