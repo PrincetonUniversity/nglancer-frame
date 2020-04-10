@@ -6,7 +6,7 @@ RUN mkdir -p /opt/repos && mkdir -p /mnt/exchange
 WORKDIR /opt/repos
 
 RUN apt-get update -y && apt-get upgrade -y && \
-    apt-get install bash git gcc 'g++' musl-dev -y
+    apt-get install bash git gcc 'g++' musl-dev iproute2 -y
 
 RUN  pip install neuroglancer==1.1.6 redis
 

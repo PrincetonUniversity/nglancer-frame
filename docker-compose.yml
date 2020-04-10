@@ -1,29 +1,5 @@
 version: '3.4'
 services:
-  # testcv:
-  #   env_file: .env
-  #   build:
-  #     context: ./cloudvolume
-  #     dockerfile: cloudvolume.dockerfile
-  #   volumes:
-  #     - ${CVDATA}:/mnt/data:ro
-  #   ports:
-  #     - 1337:1337
-  #   depends_on:
-  #     - confproxy
-  # nglancer:
-  #   env_file: .env
-  #   build:
-  #     context: ./neuroglancer
-  #     dockerfile: neuroglancer.dockerfile
-  #   depends_on:
-  #     - testcv
-  #     - confproxy
-  #     - redis
-  #   ports:
-  #     - "8080:8080"
-  #   volumes:
-  #     - ./libraries:/opt/libraries
   confproxy:
     env_file: .env
     image: jupyterhub/configurable-http-proxy:3.1.1
@@ -57,7 +33,15 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - '5000:5000'
-
+  # nglancerstatic:
+  #   env_file: .env
+  #   volumes:
+  #     - /home/ahoag/Git/neuroglancer:/opt/neuroglancer
+  #   build:
+  #     context: ./nglancerstatic
+  #     dockerfile: nglancerstatic.Dockerfile
+  #   ports:
+  #     - '8080:8080'
   # adding an all in memory redis server; this will and is meant to lose state
   # between relaunches of the service. Self registering services should get
   # code that verifies periodically that they are correctly registered to the
@@ -66,22 +50,7 @@ services:
     image: redis
     expose:
       - 6379
-  # notebook:
-  #   env_file: .env
-  #   build:
-  #     context: notebook
-  #     dockerfile: scratchpad.Dockerfile
-  #   command: ["start-notebook.sh",
-  #           "--no-browser", "--NotebookApp.token=''",
-  #           "--NotebookApp.password=''",
-  #           "--NotebookApp.base_url='/notebook'",
-  #           "--NotebookApp.allow_origin='*'"]
-  #   volumes:
-  #     - ./data:/home/jovyan
-  #     - ./libraries:/opt/libraries
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #     - /jukebox/LightSheetData:/mnt/LightSheetData
-
+ 
 networks:
   default:
     external:

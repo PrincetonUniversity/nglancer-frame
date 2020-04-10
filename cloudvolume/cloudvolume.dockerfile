@@ -18,8 +18,6 @@ RUN pip install redis cloud-volume && pip install cloud-volume[boss,test,all_vie
 
 VOLUME ["/mnt/data"]
 
-ENV HOSTNAME myhost
-
 COPY volshim.py /opt/volshim.py
 
 CMD ["python","/opt/volshim.py"]
