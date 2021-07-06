@@ -36,15 +36,22 @@ class progproxy(object):
 
     def deleteroute(self, proxypath):
         logger.debug(f"removing proxy path {proxypath}")
-        response = requests.delete(f"{self.target}/api/routes/{proxypath}")
+        response = requests.delete(f"{self.target}/api/routes{proxypath}",headers=self.headers)
         if response.status_code != 204:
             logger.warn(f"removal of {proxypath} failed")
             logger.debug(f"requests returned: {response}")
         else:
             logger.debug(f"{proxypath} removed")
 
-    def getroutes(self):
+    def getroutes(self,inactive_since=None):
+        """ inactive_since is a ISO 8601 timestamp, e.g.:
+        2020-01-28T18:11:57.026018 """
         logger.debug("getting configured routes")
-        response = requests.get(f"{self.target}/api/routes")
-        logger.debug(f"current routes: {response}")
+        if inactive_since is not None:
+            response = requests.get(f"{self.target}/api/routes?inactive_since={inactive_since}",headers=self.headers)
+        else:
+            response = requests.get(f"{self.target}/api/routes",headers=self.headers)
+
+        logger.debug(f"current routes: {response.text}")
+
         return response

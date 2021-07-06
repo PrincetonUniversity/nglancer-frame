@@ -7,10 +7,10 @@ import os
 import numpy as np
 import types
 from time import sleep
+# import progproxy as pp
+
 
 def start_server():
-
-
 
     ## add some error checking
     if not os.path.isfile('/mnt/data/info'):
@@ -18,7 +18,6 @@ def start_server():
         arr = np.random.random_integers(0, high=255, size=(128,128, 128))
         arr = np.asarray(arr, dtype=np.uint8)
         vol = CloudVolume.from_numpy(arr, max_mip=1)
-
     else:
         logging.info('using mounted dataset')
         vol = CloudVolume('file:///mnt/data',parallel=2,cache=True)
@@ -30,9 +29,8 @@ def start_server():
     vol.viewer = funcType(localviewer, vol)
 
     logging.info('starting cloudvolume service')
-    vol.viewer()
 
-
+    vol.viewer(port=1337)
 
 
 ## replacement version of the 'view' function for the object `CloudVolumePrecomputed`
@@ -44,5 +42,11 @@ def localviewer(self, port=1337):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    # logging.basicConfig(level=logging.DEBUG)
+    # logging.info(os.listdir('/mnt/data/'))
+    # logging.info(pp)
+    # proxy_h = pp.progproxy(target_hname="confproxy")
+    # proxy_h.getroutes()
+    # register_cloudvol_confproxy()
+    # logging.info("made it here")
     start_server()

@@ -1,12 +1,11 @@
-
 # Created by https://www.gitignore.io/api/python
 # Edit at https://www.gitignore.io/?templates=python
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
-__pycache__/
 *.py[cod]
 *$py.class
+**/__pycache__/
 
 # C extensions
 *.so
@@ -31,6 +30,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -117,3 +117,10 @@ dmypy.json
 
 
 data/.*
+**/*pkl
+**/.ipynb_checkpoints
+**/.cache
+**/.ipython
+**/.jupyter
+**/.bash_history
+**/.local
